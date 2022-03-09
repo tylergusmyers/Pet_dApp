@@ -1,9 +1,11 @@
 from web3 import Web3
+from pathlib import Path
 import streamlit as st
 import pandas as pd
 import numpy as np
 import datetime
 import dogapi
+import json
 
 types_of_pets = ["cat", "dog", "horse"]
 
@@ -204,14 +206,23 @@ breeds["horse"] = [
 
 action = ""
 updates = []
+contract = ""
+w3 = ""
 
 
-@st.cache()
 def create_connection():
     w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:7545"))
     if not w3.isConnected():
         st.error("Unable to connect to Ethereum network 'http://127.0.0.1:7545'")
-    return w3
+
+    with open(Path("./petToken.sol.abi.json")) as f:
+        contract_abi = json.load(f)
+
+    # contract = w3.eth.contract(address='0x3fCd60439342ac394239D0f179e421033466DFD6', abi=contract_abi)
+    contract = w3.eth.contract(
+        address="0x60A8cAC258bc393E44F8c0261314f76210192896", abi=contract_abi
+    )
+    return w3, contract
 
 
 @st.cache(allow_output_mutation=True)
@@ -222,7 +233,24 @@ def history(pet):
 
 
 def create_pet():
-    st.success("Pet created successully")
+    b_date = int(birth_date.strftime("%s"))
+    tx_hash = contract.functions.createPet(uri, pet_type, breed, b_date, 0, 0).transact(
+        {"from": account, "gas": 1000000}
+    )
+    receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+    st.write("Transaction receipt mined:")
+    st.write(dict(receipt))
+    return True
+
+
+def update_pet(petId, update):
+    id = int(petId)
+    tx_hash = contract.functions.updatePet(id, update).transact(
+        {"from": account, "gas": 1000000}
+    )
+    receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+    st.write("Transaction receipt mined:")
+    st.write(dict(receipt))
     return True
 
 
@@ -242,7 +270,7 @@ def get_dogs():
     return dogs
 
 
-w3 = create_connection()
+w3, contract = create_connection()
 account = st.sidebar.selectbox("Select Account", w3.eth.accounts)
 
 current = st.sidebar.selectbox(
@@ -260,32 +288,34 @@ if current == "createPet":
 
     breed = st.selectbox("Breed", breeds[pet_type], index=0)
 
-    uploaded_file = st.file_uploader("Upload Files", type=["png", "jpeg"])
-    if uploaded_file is not None:
-        file_details = {
-            "FileName": uploaded_file.name,
-            "FileType": uploaded_file.type,
-            "FileSize": uploaded_file.size,
-        }
-        st.write(file_details)
+    # //uploaded_file = st.file_uploader("Upload Files", type=["png", "jpeg"])
+    # //if uploaded_file is not None:
+    # //    file_details = {
+    # //        "FileName": uploaded_file.name,
+    # //        "FileType": uploaded_file.type,
+    # //        "FileSize": uploaded_file.size,
+    # //    }
+    # //    st.write(file_details)
 
-    color = st.color_picker("Color of the Pet")
-    weight = st.number_input("Enter weight (in kgs)")
+    # color = st.color_picker("Color of the Pet")
+    # weight = st.number_input("Enter weight (in kgs)")
+    uri = st.text_input("Image URL link")
     st.button("Create", on_click=create_pet)
 
 elif current == "UpdatePet":
-    pet = st.sidebar.text_input("Pet Address", "")
-
+    pet = st.number_input("Pet ID")
     st.title(f"Updates for {pet}")
 
-    history = history(pet)
+    # history = history(pet)
     update = st.text_input(f"Whats new on {pet}", "")
     u = str(datetime.datetime.now()) + ":" + update
-    history.append(u)
 
-    updates = history
-    placeholder = st.empty()
-    placeholder.text(history)
+    update_pet(pet, u)
+    # history.append(u)
+
+    # updates = history
+    # placeholder = st.empty()
+    # .placeholder.text(history)
 
 elif current == "TerminatePet":
     st.sidebar.text_input("Pet Address", "")
