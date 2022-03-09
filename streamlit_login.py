@@ -4,6 +4,7 @@ import streamlit as st
 
 import streamlit as st
 
+
 def check_password():
     """Returns `True` if the user had a correct password."""
 
@@ -38,6 +39,7 @@ def check_password():
     else:
         # Password correct.
         return True
+
 
 if check_password():
     st.write("Here goes your normal Streamlit app...")
