@@ -3,7 +3,7 @@
 ![Pet ID](https://assets.orvis.com/is/image/orvisprd/2SFY048VD_MSSW?wid=1200&src=is($object$:1-1))
 
 ---
-Using Blockchain Technology, this dApp develops a new way to store and keep track of your Pet's information. Whether you want to keep track of the linage of your prized breed, vaccinations, or completion of transfer to a new owner. Ideal use for pet owners, breeders, vetenarians, regulators alike.
+Using Blockchain Technology, this dApp develops a new way to store and keep track of your Pet's information. Whether you want to keep track of the linage of your prized breed, vaccinations, or completion of transfer to a new owner. Ideal use for pet owners, breeders, vetenarians, and regulators alike.
 ---
 ## Technologies
 
