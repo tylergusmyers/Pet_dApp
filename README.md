@@ -5,7 +5,7 @@
 ---
 Using Blockchain Technology, this dApp develops a new way to store and keep track of your Pet's information. Whether you want to keep track of the linage of your prized breed, vaccinations, or completion of transfer to a new owner. Ideal use for pet owners, breeders, vetenarians, regulators alike.
 ---
-##Technologies
+## Technologies
 
 This project incorporates the use of Remix IDE and the following packages:
 
@@ -17,7 +17,7 @@ This project incorporates the use of Remix IDE and the following packages:
 
 ---
 
-##Installation Guide
+## Installation Guide
 
 Before running the application first install the following dependencies:
 
@@ -29,14 +29,14 @@ streamlit==1.5.0
 web3==5.27.0
 
 ---
-##Usage
+## Usage
 Owners will have the ability to mint new tokens representing a verified identity of your pet.
 Choose approved vetenarians where required vaccines are instantly verified and updated on the blockchain.
 Verify the linage of their pets by breeders who have linked connections to the parent animals. 
 This dApp creates transapancy in the pet market. 
 
 ---
-##Contributors
+## Contributors
 
 This code was created in 2022 for a project for University of California - Berkeley, Fintech Bootcamp
 
@@ -49,7 +49,7 @@ Tristen Pulido - tristenpulido@gmail.com
 Dominik Tortes - domtortes@berkeley.edu
 
 ---
-##License
+## License
 
 MIT License
 
