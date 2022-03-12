@@ -6,36 +6,36 @@
 Using Blockchain Technology, this dApp develops a new way to store and keep track of your Pet's information. Whether you want to keep track of the linage of your prized breed, vaccinations, or completion of transfer to a new owner. Ideal use for pet owners, breeders, vetenarians, and regulators alike.
 ---
 ## Technologies
-
-This project incorporates the use of Remix IDE and the following packages:
-
-- Streamlit - user interface 
-- Python 3.7 
-- pragma solidity^0.5.0 
-- Ganache - private blockchain network
-- openZeppelin - erc20 token
-
+Implements ERC721 Token(https://eips.ethereum.org/EIPS/eip-721) 
+- streamlit
+- Ganache/Ethereum
+- Solidity
 ---
 
 ## Installation Guide
 
-Before running the application first install the following dependencies:
-
-dogapi==1.11.1
-numpy==1.20.1
-pandas==1.0.3
-requests==2.25.1
-streamlit==1.5.0
-web3==5.27.0
-
+- Clone this repo
+- Deploy  Contract token in your Ethereum network
+  - load  "petToken.sol" in https://remix.ethereum.org/ and compile
+  - Deploy the Contract and get the address of the contract
+  - *** Warning *** The contract abi in the repository is from the same revision of petToken.sol. Any chnages in this file will fail the deployment
+-  Initialize variables needed in your environment
+  - `WEB3_HTTP_PROVIDER='YOUR_WEB_HTTP_PROVIDER'`
+  - `CONTRACT_TOKEN_ADDRESS='Adress of the contract deployed above'`
+- Install the dependencies
+  - `pip install -r requirements.txt`
+- Deploy the app
+  - `streamlit run create_pet.py`
+- Select the account from the dropdown in the sidebar and start using the app.
 ---
+
 ## Usage
 Owners will have the ability to mint new tokens representing a verified identity of your pet.
 Choose approved vetenarians where required vaccines are instantly verified and updated on the blockchain.
 Verify the linage of their pets by breeders who have linked connections to the parent animals. 
 This dApp creates transapancy in the pet market. 
 
----
+
 ## Contributors
 
 This code was created in 2022 for a project for University of California - Berkeley, Fintech Bootcamp
