@@ -7,9 +7,30 @@ import datetime
 import dogapi
 import json
 
+
+# For now start with 3 pet types
 types_of_pets = ["cat", "dog", "horse"]
 
+# Current pet_token_id
+pet = 0
+
+# Temp variables for states
+update = ""
+account = ""
 breeds = {}
+provider = "http://127.0.0.1:7545"
+contract_address = "0x7e71494397937377f6B4a191C1377cE07C766D50"
+if "current_account_tokens" not in st.session_state:
+    st.session_state["current_account_tokens"] = "value"
+action = ""
+updates = []
+
+# Variables to store contract and Web3 instance we are working with
+contract = ""
+w3 = ""
+
+
+# Static init cats and Horse. Fetch the dogs
 breeds["cat"] = [
     "Abyssinian",
     "Aegean",
@@ -204,37 +225,35 @@ breeds["horse"] = [
 ]
 
 
-action = ""
-updates = []
-contract = ""
-w3 = ""
-
-
 def create_connection():
-    w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:7545"))
+    """ For now connect to local Ganache. App may be extended to work with any W3 provide """
+    w3 = Web3(Web3.HTTPProvider(provider))
     if not w3.isConnected():
         st.error("Unable to connect to Ethereum network 'http://127.0.0.1:7545'")
 
     with open(Path("./petToken.sol.abi.json")) as f:
         contract_abi = json.load(f)
 
-    # contract = w3.eth.contract(address='0x3fCd60439342ac394239D0f179e421033466DFD6', abi=contract_abi)
-    contract = w3.eth.contract(
-        address="0x60A8cAC258bc393E44F8c0261314f76210192896", abi=contract_abi
-    )
+    # This contract address is only for testing purpose. Should be reading this one from user too
+    contract = w3.eth.contract(address=contract_address, abi=contract_abi)
     return w3, contract
-
-
-@st.cache(allow_output_mutation=True)
-def history(pet):
-    """ Fetch Pets history from the block chain
-  """
-    return updates
 
 
 def create_pet():
     b_date = int(birth_date.strftime("%s"))
-    tx_hash = contract.functions.createPet(uri, pet_type, breed, b_date, 0, 0).transact(
+    tx_hash = contract.functions.createPet(
+        uri, pet_type, breed, b_date, int(parent_0), int(parent_1)
+    ).transact({"from": account, "gas": 1000000})
+    receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+    st.write("Transaction receipt mined:")
+    st.write(dict(receipt))
+    return True
+
+
+def update_pet():
+    u = str(datetime.datetime.now()) + ":" + update
+    id = int(pet_id)
+    tx_hash = contract.functions.updatePet(id, u).transact(
         {"from": account, "gas": 1000000}
     )
     receipt = w3.eth.waitForTransactionReceipt(tx_hash)
@@ -243,15 +262,17 @@ def create_pet():
     return True
 
 
-def update_pet(petId, update):
-    id = int(petId)
-    tx_hash = contract.functions.updatePet(id, update).transact(
-        {"from": account, "gas": 1000000}
-    )
-    receipt = w3.eth.waitForTransactionReceipt(tx_hash)
-    st.write("Transaction receipt mined:")
-    st.write(dict(receipt))
+def terminate_pet():
+    id = int(pet_id)
+    st.warning("We currently don't support terminating pets")
     return True
+    # tx_hash = contract.functions.terminatePet(id).transact(
+    #    {"from": account, "gas": 1000000}
+    # )
+    # receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+    # st.write("Transaction receipt mined:")
+    # st.write(dict(receipt))
+    # return True
 
 
 @st.cache
@@ -270,12 +291,33 @@ def get_dogs():
     return dogs
 
 
-w3, contract = create_connection()
-account = st.sidebar.selectbox("Select Account", w3.eth.accounts)
+def update_user():
+    """ New user selected. Fetch this owners pets and render the page"""
+    total_tokens = contract.functions.totalSupply().call()
+    st.write("Total pets in universe: {}".format(total_tokens))
 
+    st.session_state.current_account_tokens = []
+    for id in range(total_tokens):
+        owner = contract.functions.ownerOf(id).call()
+        # st.write("owner:account -- {}:{}.".format(owner, account))
+        if owner == account:
+            st.session_state.current_account_tokens.append(id)
+
+    st.write(
+        "Current Breeder has {} pets".format(
+            len(st.session_state.current_account_tokens)
+        ),
+        st.session_state.current_account_tokens,
+    )
+
+
+w3, contract = create_connection()
+account = st.sidebar.selectbox("List of Account", w3.eth.accounts)
+st.sidebar.button("select Breeder Account", on_click=update_user)
 current = st.sidebar.selectbox(
     "Select the transaction", ["createPet", "UpdatePet", "TerminatePet"]
 )
+
 if current == "createPet":
     breeds["dogs"] = get_dogs()
     action = "Create"
@@ -288,36 +330,19 @@ if current == "createPet":
 
     breed = st.selectbox("Breed", breeds[pet_type], index=0)
 
-    # //uploaded_file = st.file_uploader("Upload Files", type=["png", "jpeg"])
-    # //if uploaded_file is not None:
-    # //    file_details = {
-    # //        "FileName": uploaded_file.name,
-    # //        "FileType": uploaded_file.type,
-    # //        "FileSize": uploaded_file.size,
-    # //    }
-    # //    st.write(file_details)
-
-    # color = st.color_picker("Color of the Pet")
-    # weight = st.number_input("Enter weight (in kgs)")
     uri = st.text_input("Image URL link")
+    parent_0 = st.text_input("Parent 0", "0")
+    parent_1 = st.text_input("Parent 1", "0")
     st.button("Create", on_click=create_pet)
 
 elif current == "UpdatePet":
-    pet = st.number_input("Pet ID")
+    st.write("current owner pets:{}".format(st.session_state.current_account_tokens))
+    pet_id = st.selectbox("Pet ID", st.session_state.current_account_tokens)
     st.title(f"Updates for {pet}")
-
-    # history = history(pet)
-    update = st.text_input(f"Whats new on {pet}", "")
-    u = str(datetime.datetime.now()) + ":" + update
-
-    update_pet(pet, u)
-    # history.append(u)
-
-    # updates = history
-    # placeholder = st.empty()
-    # .placeholder.text(history)
-
+    update = st.text_input(f"Whats new on {pet}", "", on_change=update_pet)
 elif current == "TerminatePet":
-    st.sidebar.text_input("Pet Address", "")
+    # st.sidebar.text_input("Pet Address", "")
     action = "Terminate"
     st.title(f"Pet {action} APP")
+    pet_id = st.selectbox("Pet ID", st.session_state.current_account_tokens)
+    st.button("Terminate", on_click=terminate_pet)

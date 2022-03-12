@@ -1,4 +1,3 @@
-
 import streamlit as st
 from dataclasses import dataclass
 from typing import Any, List
@@ -8,17 +7,15 @@ import hashlib
 
 
 @dataclass
-class Title():
-    sender:str
-    receiver:str
-    title:str
-
-
+class Title:
+    sender: str
+    receiver: str
+    title: str
 
 
 @dataclass
 class Ownership:
-    record:Title
+    record: Title
     creator_id: int
     prev_hash: str = "0"
     timestamp: str = datetime.datetime.utcnow().strftime("%H:%M:%S")
@@ -44,10 +41,11 @@ class Ownership:
 
         return sha.hexdigest()
 
+
 @dataclass
 class TransferOwnership:
     chain: List[Ownership]
-    difficulty: int = 10 
+    difficulty: int = 10
 
     def proof_of_work(self, ownership):
 
@@ -66,7 +64,7 @@ class TransferOwnership:
 
     def add_block(self, newOwner):
         ownership = self.proof_of_work(newOwner)
-        self.chain +=[ownership]
+        self.chain += [ownership]
 
     def is_valid(self):
         block_has = self.chain[0].hash_block()
@@ -82,11 +80,11 @@ class TransferOwnership:
         return True
 
 
-
-@st.cache(allow_output_mutation = True)
+@st.cache(allow_output_mutation=True)
 def setup():
     print("Initializing Title Information")
-    return TransferOwnership([Ownership("Title" , 0)])
+    return TransferOwnership([Ownership("Title", 0)])
+
 
 st.markdown("# Transfer Ownership Title")
 st.markdown("## Input address of who you would like to Transfer the Ownership to ")
@@ -94,24 +92,22 @@ st.markdown("## Input address of who you would like to Transfer the Ownership to
 titleTransfer = setup()
 
 
-input_sender_id=st.text_input("Current Owner ID")
+input_sender_id = st.text_input("Current Owner ID")
 
-input_receiver_id=st.text_input("New Owner ID")
+input_receiver_id = st.text_input("New Owner ID")
 
-input_title= st.text("Pet Name ID")
+input_title = st.text("Pet Name ID")
 
 if st.button("Transfer Title"):
     prev_block = titleTransfer.chain[-1]
     prev_block_hash = prev_block.hash_block()
 
-
     new_owner = Ownership(
-            title=Title(
-                sender=input_sender_id,
-                receiver=input_receiver_id,
-                title = input_title),
-            creator_id=42,
-            prev_hash=prev_block_hash
+        title=Title(
+            sender=input_sender_id, receiver=input_receiver_id, title=input_title
+        ),
+        creator_id=42,
+        prev_hash=prev_block_hash,
     )
 
     titleTransfer.add_block(new_owner)
@@ -132,13 +128,12 @@ selected_block = st.sidebar.selectbox(
     "Which Owner would you like to see?", titleTransfer.chain
 )
 
-st,sidebar.write(selected_block)
+st, sidebar.write(selected_block)
 
 if st.button(" Transfer Complete"):
     st.write(titleTransfer.is_valid())
 
-    
-    #NExt Steps:
+    # NExt Steps:
 
     """GAnache Interface, 
     
